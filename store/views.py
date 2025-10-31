@@ -1,14 +1,13 @@
 from django.db.models.aggregates import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, UpdateModelMixin
+from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, DjangoModelPermissions
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.filters import SearchFilter, OrderingFilter
-
-from .permissions import IsAdminOrReadOnly
+from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission
 from .pagination import DefaultPagination
 from .filters import ProductFilter
 from .serializers import AddCartItemSerializer, CartItemSerializer, CartSerializer, CollectionSerializer, CustomerSerializer, ProductSerializer, ReviewSerializer, UpdateCartItemSerializer
@@ -96,3 +95,7 @@ class CustomerViewSet(ModelViewSet):
             serializer.save()
 
         return Response(serializer.data)
+    
+    @action(detail=True, permission_classes= [ViewCustomerHistoryPermission])
+    def history(self, request, pk=None):
+        return Response('not implemented yet')
