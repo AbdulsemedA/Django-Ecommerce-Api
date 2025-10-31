@@ -6,8 +6,10 @@ from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyM
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.filters import SearchFilter, OrderingFilter
+
+from store.permissions import IsAdminOrReadOnly
 from .pagination import DefaultPagination
 from .filters import ProductFilter
 from .serializers import AddCartItemSerializer, CartItemSerializer, CartSerializer, CollectionSerializer, CustomerSerializer, ProductSerializer, ReviewSerializer, UpdateCartItemSerializer
@@ -21,6 +23,7 @@ class ProductViewSet(ModelViewSet):
     pagination_class = DefaultPagination
     search_fields = ['title', 'description']
     ordering_fields = ['unit_price', 'last_update']
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_context(self):
         return { 'request': self.request }
@@ -34,6 +37,7 @@ class ProductViewSet(ModelViewSet):
 class CollectionViewSet(ModelViewSet):
     queryset = Collection.objects.annotate(products_count=Count('products')).all()
     serializer_class = CollectionSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
     def destroy(self, request, *args, **kwargs):
         if Collection.objects.count('products') > 0:
@@ -70,17 +74,17 @@ class CartItemViewSet(ModelViewSet):
     def get_serializer_context(self):
         return { 'cart_id': self.kwargs['cart_pk'] }
 
-class CustomerViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
+class CustomerViewSet(ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get_permissions(self):
         if self.request.method == 'GET':
             return [AllowAny()]
         return [IsAuthenticated()]
 
-    @action(detail=False, methods=['get', 'put'],)
+    @action(detail=False, methods=['get', 'put'], permission_classes=[IsAuthenticated])
     def me(self, request):
         (customer, created) = Customer.objects.get_or_create(user_id=request.user.id)
 
