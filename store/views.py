@@ -10,8 +10,8 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from .permissions import IsAdminOrReadOnly, ViewCustomerHistoryPermission
 from .pagination import DefaultPagination
 from .filters import ProductFilter
-from .serializers import AddCartItemSerializer, CartItemSerializer, CartSerializer, CollectionSerializer, CustomerSerializer, ProductSerializer, ReviewSerializer, UpdateCartItemSerializer
-from .models import Cart, CartItem, Collection, Customer, OrderItem, Product, Review
+from .serializers import AddCartItemSerializer, CartItemSerializer, CartSerializer, CollectionSerializer, CustomerSerializer, OrderSerializer, ProductSerializer, ReviewSerializer, UpdateCartItemSerializer
+from .models import Cart, CartItem, Collection, Customer, Order, OrderItem, Product, Review
 
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
@@ -99,3 +99,7 @@ class CustomerViewSet(ModelViewSet):
     @action(detail=True, permission_classes= [ViewCustomerHistoryPermission])
     def history(self, request, pk=None):
         return Response('not implemented yet')
+
+class OrderViewSet(ModelViewSet):
+    queryset = Order.objects.prefetch_related('items__product').all()
+    serializer_class = OrderSerializer
