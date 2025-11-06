@@ -108,7 +108,13 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['id', 'customer', 'placed_at', 'payment_status', 'items']
-    
+
+class UpdateOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['payment_status']
+
+
 class CreateOrderSerializer(serializers.Serializer):
     cart_id = serializers.UUIDField()
 
@@ -123,7 +129,7 @@ class CreateOrderSerializer(serializers.Serializer):
         with transaction.atomic():
             cart_id = self.validated_data['cart_id']
             
-            (customer, created) = Customer.objects.get_or_create(user_id=self.context['user_id'])
+            customer = Customer.objects.get(user_id=self.context['user_id'])
             order = Order.objects.create(customer=customer)
 
             cart_items = CartItem.objects \
